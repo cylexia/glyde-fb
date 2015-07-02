@@ -167,9 +167,13 @@ while( running )
             end if
         end if
         
+        if( Glyde.checkTimer() ) then
+            label = Glyde.getTimerLabel()
+            exit while
+        end if
+        
         sleep 15, 1
     wend
 wend
 
-screen 0
 end
