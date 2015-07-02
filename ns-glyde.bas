@@ -122,7 +122,7 @@ namespace Glyde
                     Glyde._selected = i
                     ' remove these if "else" and the 2 after are uncommented
                     line (x1,y1)-(x2,y2), clr, B
-                    line ((x1+1),(y1+1))-((x2-1),(y2-1)), clr, B
+                    line ((x1+1),(y1+1))-((x2+1),(y2+1)), clr, B
                 'else
                 '    if( show_zones ) then
                 '        clr = Glyde._clr_0
