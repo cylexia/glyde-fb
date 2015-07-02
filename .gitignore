@@ -1,0 +1,6 @@
+# Executables
+*.exe
+*.bat
+
+# Sync config
+sync.txt

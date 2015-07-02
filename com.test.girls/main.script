@@ -1,0 +1,37 @@
+f.setViewWidth 300 height 300
+f.setTitle "Picture Test"
+
+f.loadResource "com.test.girls/girls.map" as "girls"
+
+gosub :SHOW_UI
+stop
+
+:SHOW_UI
+	f.clear
+	f.paintFilledRectAs "bg" x 0 y 0 width 300 height 300 colour "#ffffff"
+	f.writeAs "cara" value "Cara" x 0 y 0 width 300 height 50 onClickGoto :SHOW_CARA border "#ff0000"
+	f.writeAs "amy" value "Amy" x 0 y 50 width 300 height 50 onClickGoto :SHOW_AMY border "#ff0000"
+
+	f.onKey "1" goto :SHOW_CARA
+	f.onKey "2" goto :SHOW_AMY
+	return
+
+
+:SHOW_CARA
+	gosub :SHOW_UI
+	f.drawAs "cara+delevigne" id "girls.cara" x 0 y 100 onClickGoto :WEB
+	stop
+
+:SHOW_AMY
+	gosub :SHOW_UI
+	f.drawAs "amy+adams" id "girls.amy" x 0 y 100 onClickGoto :WEB
+	stop
+
+:WEB
+	NAME = f.getLastActionId
+	URL = join "http://www.google.com/search?q=" & NAME
+	platform.exec "browse" withArgs URL onDoneGoto :NOTHING onErrorGoto :NOTHING
+	stop
+
+:NOTHING
+	stop
