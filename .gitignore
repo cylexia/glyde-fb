@@ -4,3 +4,6 @@
 
 # Sync config
 sync.txt
+
+# Temp Files
+app/test.txt
