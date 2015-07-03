@@ -43,6 +43,10 @@ namespace Glyde
     declare function _isUniqueId( id as string ) as integer
     declare sub _applyStyle( d as DICTSTRING ptr )
     declare sub _setStyle( id as string, d as DICTSTRING )
+    declare sub _startTimer( interval as integer, label as string )
+    declare sub _stopTimer()
+    declare function checkTimer() as integer
+    declare function getTimerLabel() as string
     
     dim as DICTSTRING _buttons(255)
     dim as DICTSTRING _keymap
@@ -54,12 +58,16 @@ namespace Glyde
     dim as integer _selected
     dim as any ptr _draw_context
     dim as integer _width, _height
+    dim as integer _timer_interval
+    dim as double _timer_next
+    dim as string _timer_label
     
     function init() as integer
         Glyde._clr_0 = RGB( 0, 0, 0 )
         Glyde._clr_1 = RGB( 255, 0, 0 )
         Glyde._clear()
         Glyde._data = Dict.create()
+        Glyde._timer_next = -1
         Glyde.setData( Glyde.D_CLOSE_HANDLER, "" )
         Glyde.setData( Glyde.D_LAST_HIT_BUTTON, "" )
         return Glue.addPlugin( @Glyde.glueCommand )
@@ -114,7 +122,7 @@ namespace Glyde
                     Glyde._selected = i
                     ' remove these if "else" and the 2 after are uncommented
                     line (x1,y1)-(x2,y2), clr, B
-                    line ((x1+1),(y1+1))-((x2-1),(y2-1)), clr, B
+                    line ((x1+1),(y1+1))-((x2+1),(y2+1)), clr, B
                 'else
                 '    if( show_zones ) then
                 '        clr = Glyde._clr_0
@@ -240,6 +248,9 @@ namespace Glyde
             case "settitle"
                 windowtitle vv
                 
+            case "setstyle"
+                Glyde._setStyle( vv, w )
+                
             case "drawas"
                 return Glyde._drawAs( vv, @w )
             case "writeas", "addtext"
@@ -262,9 +273,14 @@ namespace Glyde
             'event handlers
             case "onkey"       'onkey KEY goto LABEL
                 return Glyde._onKeyGoto( vv, @w )
-                
-            case "onclosegoto"
-                Glyde.setData( Glyde.D_CLOSE_HANDLER, vv )
+            
+            case "starttimerwithinterval"
+                Glyde._startTimer(   _
+                        Dict.intValueOf( w, c ),  _
+                        Dict.valueOf( w, "ontickgoto" )  _
+                    )
+            case "stoptimer"
+                Glyde._stopTimer()
                 
             case "exit", "stop"
                 ' notify the parent loop that it must exit
@@ -395,6 +411,7 @@ namespace Glyde
                     Glyde._width,  _
                     Glyde._height  _
                 )
+            line Glyde._draw_context, (0, 0)-(Glyde._width, Glyde._height), RGB( 255, 255, 255 ), BF
         end if
     end sub
     
@@ -495,7 +512,7 @@ namespace Glyde
     function _createEntityAs( id as string, d as DICTSTRING ptr ) as integer
         dim as integer  _
                 x = Dict.intValueOf( *d, "x", Dict.intValueOf( *d, "atx" ) ),  _
-                y = Dict.intValueOf( *d, "y" ),  _
+                y = Dict.intValueOf( *d, "y", Dict.intValueOf( *d, "aty" ) ),  _
                 w = Dict.intValueOf( *d, "width" ),  _
                 h = Dict.intValueOf( *d, "height" )
         dim as integer clr
@@ -572,5 +589,28 @@ namespace Glyde
         return 0
     end function
         
+    sub _startTimer( interval as integer, label as string )
+        Glyde._timer_interval = interval
+        Glyde._timer_label = label
+        Glyde._timer_next = (timer() + (interval / 10))
+    end sub
+    
+    sub _stopTimer()
+        Glyde._timer_next = -1
+    end sub
 
+    function checkTimer() as integer
+        if( Glyde._timer_next > -1 ) then
+            if( timer() >= Glyde._timer_next ) then
+                Glyde._timer_next = (timer() + (Glyde._timer_interval / 10))
+                return TRUE
+            end if
+        end if
+        return FALSE
+    end function
+    
+    function getTimerLabel() as string
+        return Glyde._timer_label
+    end function
+    
 end namespace
