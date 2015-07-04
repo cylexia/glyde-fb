@@ -4,6 +4,7 @@
 #include "mod/platform.bas"
 
 #define __GLYDE__
+#include "ns-ui.bas"
 #include "ns-imagemap.bas"
 #include "ns-glyde.bas"
 

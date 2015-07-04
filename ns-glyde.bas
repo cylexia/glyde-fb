@@ -237,6 +237,7 @@ namespace Glyde
                     )
                 if( (Glyde._width > 0) and (Glyde._height > 0) ) then
                     screenres Glyde._width, Glyde._height, 32, , vf
+                    UI.init()
                 else
                     Utils.echoError( ("[Glyde] Invalid View: w=" & Glyde._width & "; h=" & Glyde._height & "; f=" & vf) )
                     return 0

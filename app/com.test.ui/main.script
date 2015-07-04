@@ -22,7 +22,8 @@ f.startTimerWithInterval 10 onTickGoto :TIMER_TEST
 stop
 
 :ASK
-  platform.exec "ui" withArgs "ask -prompt \qYour Name\q -value Chris -to test.txt" onDoneGoto :READ onErrorGoto :FAIL
+  #platform.exec "ui" withArgs "ask -prompt \qYour Name\q -value Chris -to test.txt" onDoneGoto :READ onErrorGoto :FAIL
+  ui.ask "Your Name:" value "test" onDoneGoto :READ onCancelGoto :FAIL
   stop
 
 :CHOOSE
