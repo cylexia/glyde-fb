@@ -42,7 +42,7 @@ namespace Glyde
     declare function _doAction( action as string, d as DICTSTRING ptr ) as integer
     declare function _isUniqueId( id as string ) as integer
     declare sub _applyStyle( d as DICTSTRING ptr )
-    declare sub _setStyle( id as string, d as DICTSTRING )
+    declare sub _defineStyle( id as string, d as DICTSTRING )
     declare sub _startTimer( interval as integer, label as string )
     declare sub _stopTimer()
     declare function checkTimer() as integer
@@ -248,8 +248,8 @@ namespace Glyde
             case "settitle"
                 windowtitle vv
                 
-            case "setstyle"
-                Glyde._setStyle( vv, w )
+            case "definestyle", "setstyle"      ' setStyle will be removed in the future
+                Glyde._defineStyle( vv, w )
                 
             case "drawas"
                 return Glyde._drawAs( vv, @w )
@@ -292,7 +292,8 @@ namespace Glyde
         return 1                ' we handled it
     end function        
 
-    sub _setStyle( id as string, d as DICTSTRING )
+    sub _defineStyle( id as string, d as DICTSTRING )
+        Glyde._applyStyle( @d )
         Dict.set( Glyde._styles, id, d )
     end sub
     
