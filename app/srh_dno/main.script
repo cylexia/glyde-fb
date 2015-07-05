@@ -1,3 +1,5 @@
+f.doAction "chrome.hide" onDoneGoto :START onUnsupportedGoto :START onErrorGoto :START
+
 :START
     f.setWidth 500 height 500
 	f.setTitle "Day Age Calulator"
