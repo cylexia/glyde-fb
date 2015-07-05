@@ -32,7 +32,6 @@ namespace Glyde
     declare function _markAs( id as string, d as DICTSTRING ptr ) as integer
     declare function _paintRectAs( id as string, d as DICTSTRING ptr, filled as integer ) as integer
     declare function _createEntityAs( id as string, d as DICTSTRING ptr ) as integer
-    declare sub _shadeView()
     declare sub _hilight()
     declare sub _clear()
     'declare function _drawResourceImage( id as string, byref d as DICTSTRING ) as integer
@@ -43,7 +42,7 @@ namespace Glyde
     declare function _doAction( action as string, d as DICTSTRING ptr ) as integer
     declare function _isUniqueId( id as string ) as integer
     declare sub _applyStyle( d as DICTSTRING ptr )
-    declare sub _defineStyle( id as string, d as DICTSTRING )
+    declare sub _setStyle( id as string, d as DICTSTRING )
     declare sub _startTimer( interval as integer, label as string )
     declare sub _stopTimer()
     declare function checkTimer() as integer
@@ -224,8 +223,6 @@ namespace Glyde
             ' view actions
             case "clear", "clearview"
                 Glyde._clear()
-            case "shade"
-                Glyde._shadeView()
                 
             ' TODO: if using object orientated entities support this
             'case "remove"
@@ -251,8 +248,8 @@ namespace Glyde
             case "settitle"
                 windowtitle vv
                 
-            case "definestyle", "setstyle"      ' setStyle will be removed in the future
-                Glyde._defineStyle( vv, w )
+            case "setstyle"
+                Glyde._setStyle( vv, w )
                 
             case "drawas"
                 return Glyde._drawAs( vv, @w )
@@ -295,8 +292,7 @@ namespace Glyde
         return 1                ' we handled it
     end function        
 
-    sub _defineStyle( id as string, d as DICTSTRING )
-        Glyde._applyStyle( @d )
+    sub _setStyle( id as string, d as DICTSTRING )
         Dict.set( Glyde._styles, id, d )
     end sub
     
@@ -404,6 +400,7 @@ namespace Glyde
         Glyde._buttons_last = -1
         Glyde._keymap = Dict.create()
         Glyde._ids = Dict.create()
+        Glyde._styles = Dict.create()
         Glyde._selected = -1
         if( Glyde._draw_context <> 0 ) then
             imagedestroy( Glyde._draw_context )
@@ -417,26 +414,6 @@ namespace Glyde
             line Glyde._draw_context, (0, 0)-(Glyde._width, Glyde._height), RGB( 255, 255, 255 ), BF
         end if
     end sub
-    
-    sub _shadeView()
-        Glyde._buttons_last = -1
-        Glyde._keymap = Dict.create()
-        Glyde._ids = Dict.create()
-        Glyde._selected = -1
-        dim as integer i, e, s
-        if( Glyde._width > Glyde._height ) then
-            e = (Glyde._width * 2)
-            s = Glyde._height
-        else
-            e = (Glyde._height * 2)
-            s = Glyde._width
-        end if
-        for i = 0 to e step 10
-            line Glyde._draw_context, (i, 0)-STEP(-s, s), 0
-        next
-        ' since this is often used before execution or such we repaint NOW
-        Glyde.repaint()
-    end sub        
     
     sub _hilight()
         if( Glyde._buttons_last > -1 ) then        
