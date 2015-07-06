@@ -7,3 +7,8 @@ sync.txt
 
 # Temp Files
 app/test.txt
+
+# Lightswitch app (home use)
+app/lightswitch.app
+app/lightswitch/*
+app/lightswitch
