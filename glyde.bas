@@ -110,17 +110,7 @@ while( running )
         '  mouse hittesting and only use morse-key, if >1 then enable normal
         '  left-button hittesting and use morse-key on the other button
         if( mb > 0 ) then
-            if( morse_mouse_key = 1 ) then          ' lmb is morse key
-                ' since we're using the left mouse button for the morse-key functionaility
-                ' we don't allow clicking with it
-                if( mb = morse_mouse_key ) then
-                    while( mb > 0 )
-                        getmouse mx, my, , mb
-                        sleep 15, 1
-                    wend
-                    key = morse_key
-                end if
-            elseif( morse_mouse_key = -2 ) then     ' kiosk mode
+            if( morse_mouse_key = -2 ) then     ' kiosk mode
                 dim as integer mbt = mb
                 while( mbt > 0 )
                     getmouse mx, my, , mbt
@@ -135,28 +125,39 @@ while( running )
                     timeout = -1
                     key = chr( 13 )
                 end if
-            elseif( mb = 1 ) then                   ' normal mode, lmb is pressed
-                if( (ox <> mx) or (oy <> my) ) then
-                    ox = mx
-                    oy = my
-                    hit = Glyde.hittest( mx, my )
-                    if( hit <> lasthit ) then
-                        Glyde.repaint()
-                        lasthit = hit
-                    end if
-                    if( (hit <> 0) and (mb > 0) ) then
-                        while( mb > 0 )
-                            getmouse mx, my, , mb
-                            sleep 15, 1
-                        wend
-                        Glyde.setData( Glyde.D_LAST_HIT_BUTTON, Dict.valueOf( *hit, "id" ) )
-                        Glyde.hilightNone()
-                        label = Dict.valueOf( *hit, "action" )
-                        if( len( label ) = 0 ) then
-                            Utils.echoError( "[Glyde] No action specified for button" )
-                            running = FALSE
+            elseif( (mb = 1) or (morse_mouse_key > -1) ) then                   ' left mouse, or morse-key
+                ' since we're using the left mouse button for the morse-key functionaility
+                ' we don't allow clicking with it
+                if( mb = morse_mouse_key ) then
+                    while( mb > 0 )
+                        getmouse mx, my, , mb
+                        sleep 15, 1
+                    wend
+                    key = morse_key
+                else
+                    ' not the morse_key was pressed so it must be the lmb, we'll continue as normal
+                    if( (ox <> mx) or (oy <> my) ) then
+                        ox = mx
+                        oy = my
+                        hit = Glyde.hittest( mx, my )
+                        if( hit <> lasthit ) then
+                            Glyde.repaint()
+                            lasthit = hit
                         end if
-                        exit while
+                        if( (hit <> 0) and (mb > 0) ) then
+                            while( mb > 0 )
+                                getmouse mx, my, , mb
+                                sleep 15, 1
+                            wend
+                            Glyde.setData( Glyde.D_LAST_HIT_BUTTON, Dict.valueOf( *hit, "id" ) )
+                            Glyde.hilightNone()
+                            label = Dict.valueOf( *hit, "action" )
+                            if( len( label ) = 0 ) then
+                                Utils.echoError( "[Glyde] No action specified for button" )
+                                running = FALSE
+                            end if
+                            exit while
+                        end if
                     end if
                 end if
             end if
@@ -175,8 +176,11 @@ while( running )
                     end
                 end if
             elseif( key = morse_key ) then
-                Glyde.hilightNext()
                 timeout = (timer() + 1)
+                label = Glyde.morseKeyPressed()
+                if( len( label ) > 0 ) then
+                    exit while
+                end if
             elseif( (key = chr( 13 )) or (key = chr( 10 )) ) then
                 timeout = -1
                 label = Glyde.getHilightedAction()

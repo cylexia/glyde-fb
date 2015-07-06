@@ -86,6 +86,8 @@ namespace Frame
 end namespace
 
 namespace Utils
+    const as string EMPTY_STRING = ""
+    
     declare sub echo( msg as string )
     declare sub echoError( msg as string, newline as integer = TRUE )
     declare function parseCommandLine( defaults as DICTSTRING = "", force_caps as integer = 0 ) as string
