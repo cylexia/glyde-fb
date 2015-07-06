@@ -191,6 +191,7 @@ namespace Glyde
     sub hilightNone()
         Glyde._selected = -1
         Glyde._hilight()
+        Glyde.repaint()
     end sub
     
     function getHilightedAction() as string
@@ -451,11 +452,13 @@ namespace Glyde
                         y2 = Dict.intValueOf( *dp, "y2" )
                 if( i = Glyde._selected ) then
                     clr = Glyde._clr_1
-                else
-                    clr = Glyde._clr_0
+                    line (x1,y1)-(x2,y2), clr, B
+                    line ((x1+1),(y1+1))-((x2-1),(y2-1)), clr, B
+                'else
+                '    clr = Glyde._clr_0
                 end if
-                line (x1,y1)-(x2,y2), clr, B
-                line ((x1+1),(y1+1))-((x2-1),(y2-1)), clr, B
+'                line (x1,y1)-(x2,y2), clr, B
+'                line ((x1+1),(y1+1))-((x2-1),(y2-1)), clr, B
             next
         end if
     end sub

@@ -17,7 +17,14 @@ dim as DICTSTRING vars = Utils.parseCommandLine( Dict.create(), Utils.PCL_UCASE 
 
 dim as string appfile = Dict.valueOf( vars, "_" )
 dim as string morse_key = Dict.valueOf( vars, "MORSEKEY", " " )
+dim as integer morse_mouse_key = -1
 Glyde.setData( Glyde.D_WINDOW_FLAGS, Dict.valueOf( vars, "WINDOW_FLAGS" ) )
+
+if( len( morse_key ) = 4 ) then
+    ' use "mb:(a-z)" to define the mouse button mapping
+    morse_mouse_key = (asc( morse_key, 4 ) - 96)
+    ' since morse_key will be "mb:X" the standard keyboard method is disabled
+end if
 
 if( len( appfile ) = 0 ) then
     dim as string exe = command(0)
@@ -97,33 +104,52 @@ while( running )
     
     while( TRUE )
         getmouse( mx, my, , mb )
-        if( (ox <> mx) or (oy <> my) or (mb > 0) ) then
-            ox = mx
-            oy = my
-            hit = Glyde.hittest( mx, my )
-            if( hit <> lasthit ) then
-                Glyde.repaint()
-                lasthit = hit
-            end if
-            if( (hit <> 0) and (mb > 0) ) then
-                while( mb > 0 )
-                    getmouse mx, my, , mb
-                    sleep 15, 1
-                wend
-                Glyde.setData( Glyde.D_LAST_HIT_BUTTON, Dict.valueOf( *hit, "id" ) )
-                label = Dict.valueOf( *hit, "action" )
-                if( len( label ) = 0 ) then
-                    Utils.echoError( "[Glyde] No action specified for button" )
-                    running = FALSE
+        ' if morse_mouse_key is -1 then work as normal, if 1 disable normal
+        '  mouse hittesting and only use morse-key, if >1 then enable normal
+        '  left-button hittesting and use morse-key on the other button
+        if( mb > 0 ) then
+            if( (morse_mouse_key <> 1) and (mb = 1) ) then
+                if( (ox <> mx) or (oy <> my) ) then
+                    ox = mx
+                    oy = my
+                    hit = Glyde.hittest( mx, my )
+                    if( hit <> lasthit ) then
+                        Glyde.repaint()
+                        lasthit = hit
+                    end if
+                    if( (hit <> 0) and (mb > 0) ) then
+                        while( mb > 0 )
+                            getmouse mx, my, , mb
+                            sleep 15, 1
+                        wend
+                        Glyde.setData( Glyde.D_LAST_HIT_BUTTON, Dict.valueOf( *hit, "id" ) )
+                        Glyde.hilightNone()
+                        label = Dict.valueOf( *hit, "action" )
+                        if( len( label ) = 0 ) then
+                            Utils.echoError( "[Glyde] No action specified for button" )
+                            running = FALSE
+                        end if
+                        exit while
+                    end if
                 end if
-                exit while
+            else
+                ' since we're using the left mouse button for the morse-key functionaility
+                ' we don't allow clicking with it
+                if( mb = morse_mouse_key ) then
+                    while( mb > 0 )
+                        getmouse mx, my, , mb
+                        sleep 15, 1
+                    wend
+                    key = morse_key
+                end if
             end if
+        else
+            key = inkey()
         end if
         
-        key = inkey()
         if( len( key ) > 0 ) then
             timeout = -1
-            if( (key = chr( 27 )) or (key = closewindowchr) ) then
+            if( (key = closewindowchr) ) then 'or (key = chr( 27 )) ) then
                 dim as string ex = Glyde.getData( Glyde.D_CLOSE_HANDLER )
                 if( len( ex ) > 0 ) then
                     label = ex
