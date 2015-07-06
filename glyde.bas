@@ -20,7 +20,9 @@ dim as string morse_key = Dict.valueOf( vars, "MORSEKEY", " " )
 dim as integer morse_mouse_key = -1
 Glyde.setData( Glyde.D_WINDOW_FLAGS, Dict.valueOf( vars, "WINDOW_FLAGS" ) )
 
-if( len( morse_key ) = 4 ) then
+if( morse_key = "kiosk" ) then
+    morse_mouse_key = -2
+elseif( len( morse_key ) = 4 ) then
     ' use "mb:(a-z)" to define the mouse button mapping
     morse_mouse_key = (asc( morse_key, 4 ) - 96)
     ' since morse_key will be "mb:X" the standard keyboard method is disabled
@@ -108,7 +110,32 @@ while( running )
         '  mouse hittesting and only use morse-key, if >1 then enable normal
         '  left-button hittesting and use morse-key on the other button
         if( mb > 0 ) then
-            if( (morse_mouse_key <> 1) and (mb = 1) ) then
+            if( morse_mouse_key = 1 ) then          ' lmb is morse key
+                ' since we're using the left mouse button for the morse-key functionaility
+                ' we don't allow clicking with it
+                if( mb = morse_mouse_key ) then
+                    while( mb > 0 )
+                        getmouse mx, my, , mb
+                        sleep 15, 1
+                    wend
+                    key = morse_key
+                end if
+            elseif( morse_mouse_key = -2 ) then     ' kiosk mode
+                dim as integer mbt = mb
+                while( mbt > 0 )
+                    getmouse mx, my, , mbt
+                    sleep 15, 1
+                wend
+                if( mb = 1 ) then
+                    'left mouse button to select
+                    timeout = (timer() + 2)
+                    Glyde.hilightNext()
+                    key = ""
+                elseif( mb = 2 ) then
+                    timeout = -1
+                    key = chr( 13 )
+                end if
+            elseif( mb = 1 ) then                   ' normal mode, lmb is pressed
                 if( (ox <> mx) or (oy <> my) ) then
                     ox = mx
                     oy = my
@@ -131,16 +158,6 @@ while( running )
                         end if
                         exit while
                     end if
-                end if
-            else
-                ' since we're using the left mouse button for the morse-key functionaility
-                ' we don't allow clicking with it
-                if( mb = morse_mouse_key ) then
-                    while( mb > 0 )
-                        getmouse mx, my, , mb
-                        sleep 15, 1
-                    wend
-                    key = morse_key
                 end if
             end if
         else
@@ -186,10 +203,16 @@ while( running )
         
         if( (timeout > -1) and (timer() > timeout) ) then
             timeout = -1
-            label = Glyde.getHilightedAction()
-            Glyde.hilightNone()
-            if( len( label ) > 0 ) then
-                exit while
+            if( morse_mouse_key <> -2 ) then
+                ' timeout for normal morse-key is to trigger the selected item
+                label = Glyde.getHilightedAction()
+                Glyde.hilightNone()
+                if( len( label ) > 0 ) then
+                    exit while
+                end if
+            else
+                'timeout for kiosk mode morse-key is to reset the hilight only
+                Glyde.hilightNone()
             end if
         end if
         
