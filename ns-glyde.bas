@@ -23,6 +23,7 @@ namespace Glyde
     declare function getData( key as string ) as string
     declare sub hilightNext()
     declare function getHilightedAction() as string
+    declare function morseKeyPressed() as string
     declare function glueCommand( byref w as string, byref vars as string ) as integer
     declare function _loadResource( src as string, w as DICTSTRING ptr ) as integer
     declare function _removeResource( id as string ) as integer
@@ -32,7 +33,8 @@ namespace Glyde
     declare function _markAs( id as string, d as DICTSTRING ptr ) as integer
     declare function _paintRectAs( id as string, d as DICTSTRING ptr, filled as integer ) as integer
     declare function _createEntityAs( id as string, d as DICTSTRING ptr ) as integer
-    declare sub _hilight()
+    declare sub _shadeView()
+    declare sub _hilight( no_repaint as integer = 0 )
     declare sub _clear()
     'declare function _drawResourceImage( id as string, byref d as DICTSTRING ) as integer
     declare function _addButton( id as string, d as DICTSTRING ptr ) as integer
@@ -148,6 +150,26 @@ namespace Glyde
     sub repaint()
         if( Glyde._draw_context <> 0 ) then
             put (0, 0), Glyde._draw_context, PSet
+            if( Glyde._buttons_last > -1 ) then        
+                dim as integer i, clr
+                for i = 0 to Glyde._buttons_last
+                    dim as DICTSTRING ptr dp = @Glyde._buttons(i)
+                    dim as integer   _
+                            x1 = Dict.intValueOf( *dp, "x1" ),  _
+                            y1 = Dict.intValueOf( *dp, "y1" ),  _
+                            x2 = Dict.intValueOf( *dp, "x2" ),  _
+                            y2 = Dict.intValueOf( *dp, "y2" )
+                    if( i = Glyde._selected ) then
+                        clr = Glyde._clr_1
+                        line (x1,y1)-(x2,y2), clr, B
+                        line ((x1+1),(y1+1))-((x2-1),(y2-1)), clr, B
+                    'else
+                    '    clr = Glyde._clr_0
+                    end if
+    '                line (x1,y1)-(x2,y2), clr, B
+    '                line ((x1+1),(y1+1))-((x2-1),(y2-1)), clr, B
+                next
+            end if
         else
             Utils.echo( "[Glyde] Notice: context is unavailable" )
         end if
@@ -190,6 +212,7 @@ namespace Glyde
     sub hilightNone()
         Glyde._selected = -1
         Glyde._hilight()
+        Glyde.repaint()
     end sub
     
     function getHilightedAction() as string
@@ -201,6 +224,15 @@ namespace Glyde
             end if
         end if
         return ""
+    end function
+
+    function morseKeyPressed() as string
+        Glyde.hilightNext()
+        if( Dict.containsKey( Glyde._keymap, chr( 9 ) ) ) then
+            dim as string kdef = Dict.valueOf( Glyde._keymap, chr( 9 ) )
+            return Dict.valueOf( kdef, "label" )
+        end if
+        return Utils.EMPTY_STRING
     end function
 
     function glueCommand( byref w as string, byref vars as string ) as integer
@@ -223,6 +255,8 @@ namespace Glyde
             ' view actions
             case "clear", "clearview"
                 Glyde._clear()
+            case "shade"
+                Glyde._shadeView()
                 
             ' TODO: if using object orientated entities support this
             'case "remove"
@@ -271,7 +305,7 @@ namespace Glyde
                 return Glyde._doAction( vv, @w )
 
             'event handlers
-            case "onkey"       'onkey KEY goto LABEL
+            case "onkeypressed"       'onkeypressed KEY goto LABEL
                 return Glyde._onKeyGoto( vv, @w )
             
             case "starttimerwithinterval"
@@ -338,7 +372,10 @@ namespace Glyde
     function _onKeyGoto( key as string, w as DICTSTRING ptr ) as integer
         dim as string code = ""
         if( len( key ) > 0 ) then
-            if( asc( key, 1 ) = 35 ) then       ' 35 => #
+            ' use: #nn for asci value nn, $special for "special" codes or any char for that char
+            if( key = "##" ) then
+                code = "#"
+            elseif( asc( key, 1 ) = 35 ) then       ' 35 => #
                 code = chr( cint( mid( key, 2 ) ) )
             elseif( asc( key, 1 ) = 36 ) then   ' 36 => $
                 key = lcase( mid( key, 2 ) )
@@ -357,6 +394,8 @@ namespace Glyde
                         code = "4"
                     case "direction_fire"
                         code = "5"
+                    case "morse_key"
+                        code = chr( 9 )
                 end select
             else
                 code = key
@@ -400,7 +439,6 @@ namespace Glyde
         Glyde._buttons_last = -1
         Glyde._keymap = Dict.create()
         Glyde._ids = Dict.create()
-        Glyde._styles = Dict.create()
         Glyde._selected = -1
         if( Glyde._draw_context <> 0 ) then
             imagedestroy( Glyde._draw_context )
@@ -415,26 +453,28 @@ namespace Glyde
         end if
     end sub
     
-    sub _hilight()
-        if( Glyde._buttons_last > -1 ) then        
-            Glyde.repaint()
-            dim as integer i, clr
-            for i = 0 to Glyde._buttons_last
-                dim as DICTSTRING ptr dp = @Glyde._buttons(i)
-                dim as integer   _
-                        x1 = Dict.intValueOf( *dp, "x1" ),  _
-                        y1 = Dict.intValueOf( *dp, "y1" ),  _
-                        x2 = Dict.intValueOf( *dp, "x2" ),  _
-                        y2 = Dict.intValueOf( *dp, "y2" )
-                if( i = Glyde._selected ) then
-                    clr = Glyde._clr_1
-                else
-                    clr = Glyde._clr_0
-                end if
-                line (x1,y1)-(x2,y2), clr, B
-                line ((x1+1),(y1+1))-((x2-1),(y2-1)), clr, B
-            next
+    sub _shadeView()
+        Glyde._buttons_last = -1
+        Glyde._keymap = Dict.create()
+        Glyde._ids = Dict.create()
+        Glyde._selected = -1
+        dim as integer i, e, s
+        if( Glyde._width > Glyde._height ) then
+            e = (Glyde._width * 2)
+            s = Glyde._height
+        else
+            e = (Glyde._height * 2)
+            s = Glyde._width
         end if
+        for i = 0 to e step 10
+            line Glyde._draw_context, (i, 0)-STEP(-s, s), 0
+        next
+        ' since this is often used before execution or such we repaint NOW
+        Glyde.repaint()
+    end sub        
+    
+    sub _hilight( no_repaint as integer = 0 )
+        Glyde.repaint()
     end sub
     
     function _addButton( id as string, d as DICTSTRING ptr ) as integer
