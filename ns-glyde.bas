@@ -258,9 +258,9 @@ namespace Glyde
                 return Glyde._removeResource( vv )
                 
             ' view actions
-            case "clear"
+            case "clear", "clearview"
                 Glyde._clear()
-            case "shade"
+            case "shade", "shadeview"
                 Glyde._shadeView()
                 
             ' TODO: if using object orientated entities support this
