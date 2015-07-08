@@ -63,13 +63,18 @@ namespace Glyde
     dim as integer _timer_interval
     dim as double _timer_next
     dim as string _timer_label
+    dim as integer _offset_x, _offset_y
+    dim as integer _bgcolour
     
     function init() as integer
         Glyde._clr_0 = RGB( 0, 0, 0 )
         Glyde._clr_1 = RGB( 255, 0, 0 )
+        Glyde._bgcolour = RGB( 255, 255, 255 )
         Glyde._clear()
         Glyde._data = Dict.create()
         Glyde._timer_next = -1
+        Glyde._offset_x = 0
+        Glyde._offset_y = 0
         Glyde.setData( Glyde.D_CLOSE_HANDLER, "" )
         Glyde.setData( Glyde.D_LAST_HIT_BUTTON, "" )
         return Glue.addPlugin( @Glyde.glueCommand )
@@ -253,7 +258,7 @@ namespace Glyde
                 return Glyde._removeResource( vv )
                 
             ' view actions
-            case "clear", "clearview"
+            case "clear"
                 Glyde._clear()
             case "shade"
                 Glyde._shadeView()
@@ -275,10 +280,14 @@ namespace Glyde
                     Utils.echoError( ("[Glyde] Invalid View: w=" & Glyde._width & "; h=" & Glyde._height & "; f=" & vf) )
                     return 0
                 end if
-                Glyde._clear()
+                Glyde._bgcolour = Glyde._decodeColour( Dict.valueOf( w, "background", "#fff" ) )
                 Glyde._clr_1 = Glyde._decodeColour( Dict.valueOf( w, "hilight", "#f00" ) )
                 Glyde._clr_0 = Glyde._decodeColour( Dict.valueOf( w, "border", "#000" ) )
-
+                Glyde._clear()
+            case "setoffsetx"
+                Glyde._offset_x = Dict.intValueOf( w, c )
+                Glyde._offset_y = Dict.intValueOf( w, "y", Dict.intValueOf( w, "andy" ) )
+                
             case "settitle"
                 windowtitle vv
                 
@@ -450,7 +459,7 @@ namespace Glyde
                     Glyde._width,  _
                     Glyde._height  _
                 )
-            line Glyde._draw_context, (0, 0)-(Glyde._width, Glyde._height), RGB( 255, 255, 255 ), BF
+            line Glyde._draw_context, (0, 0)-(Glyde._width, Glyde._height), Glyde._bgcolour, BF
         end if
     end sub
     
@@ -498,6 +507,8 @@ namespace Glyde
                 y = Dict.intValueOf( *d, "y", Dict.intValueOf( *d, "aty" ) ),  _
                 w = Dict.intValueOf( *d, "width" ),  _
                 h = Dict.intValueOf( *d, "height" )
+        x += Glyde._offset_x
+        y += Glyde._offset_y
         Dict.set( def, "x1", x )
         Dict.set( def, "y1", y )
         Dict.set( def, "x2", (w + x - 1) )
@@ -557,6 +568,8 @@ namespace Glyde
                 w = Dict.intValueOf( *d, "width" ),  _
                 h = Dict.intValueOf( *d, "height" )
         dim as integer clr
+        x += Glyde._offset_x
+        y += Glyde._offset_y
         if( Dict.containsKey( *d, "fillcolour" ) ) then
             clr = Glyde._decodeColour( Dict.valueOf( *d, "fillcolour", "#000" ) )
             line Glyde._draw_context, (x, y)-STEP (w, h), clr, BF
