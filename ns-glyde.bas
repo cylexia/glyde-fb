@@ -235,6 +235,7 @@ namespace Glyde
         Glyde.hilightNext()
         if( Dict.containsKey( Glyde._keymap, chr( 9 ) ) ) then
             dim as string kdef = Dict.valueOf( Glyde._keymap, chr( 9 ) )
+            Glyde.setData( Glyde.D_LAST_HIT_BUTTON, Dict.valueOf( kdef, "id" ) )
             return Dict.valueOf( kdef, "label" )
         end if
         return Utils.EMPTY_STRING
