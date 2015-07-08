@@ -811,14 +811,14 @@ namespace Utils
             ShellExecute( NULL, "open", url, "", "", SW_SHOWNORMAL )
         #else
             dim as string cmd
-            if( len( dir( "/usr/bin/xdg-open" ) > 0 ) then
+            if( len( dir( "/usr/bin/xdg-open" ) ) > 0 ) then
                 cmd = "xdg-open"
-            else if( len( dir( "/usr/bin/gnome-open") ) > 0 ) then 
+            elseif( len( dir( "/usr/bin/gnome-open") ) > 0 ) then 
                 cmd = "gnome-open"
-            else if( len( dir( "/usr/bin/kde-open" ) > 0 ) then
+            elseif( len( dir( "/usr/bin/kde-open" ) ) > 0 ) then
                 cmd = "kde-open"
             else
-                return FALSE;
+                return FALSE
             end if
             exec( cmd, ("""" & url & """") )
         #endif
