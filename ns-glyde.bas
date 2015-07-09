@@ -415,7 +415,7 @@ namespace Glyde
         if( len( code ) > 0 ) then
             dim as DICTSTRING d = Dict.create()
             Dict.set( d, "label", Dict.valueOf( *w, "goto" ) )
-            Dict.set( d, "id", Dict.valueOf( *w, "id" ) )
+            Dict.set( d, "id", Dict.valueOf( *w, "useid" ) )
             Dict.set( Glyde._keymap, code, d )
             return 1
         else
