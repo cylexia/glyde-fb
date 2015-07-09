@@ -20,7 +20,7 @@ dim as string morse_key = Dict.valueOf( vars, "MORSEKEY", " " )
 dim as integer morse_mouse_key = -1
 Glyde.setData( Glyde.D_WINDOW_FLAGS, Dict.valueOf( vars, "WINDOW_FLAGS" ) )
 
-if( morse_key = "kiosk" ) then
+if( (morse_key = "kiosk") or Dict.intValueOf( vars, "KIOSK", 0 ) = 1 ) then
     morse_mouse_key = -2
 elseif( len( morse_key ) = 4 ) then
     ' use "mb:(a-z)" to define the mouse button mapping
@@ -92,7 +92,8 @@ dim as string key, closewindowchr = (chr( 255 ) & "k")
 dim as integer running = TRUE
 dim as integer ox = -1, oy = -1
 dim as double timeout = -1
-while( running )
+dim as integer kiosk_mouse_timeout = 0      ' will trigger kiosk changes immediately
+while( running )        
     res = Glue.run( label )
     Glyde.repaint()
     select case res
@@ -220,9 +221,18 @@ while( running )
             end if
         end if
         
+        ' Do Glyde's timer checks
         if( Glyde.checkTimer() ) then
             label = Glyde.getTimerLabel()
             exit while
+        end if
+
+        ' Kiosk mode's move mouse to stop screen saver?
+        if( morse_mouse_key = -2 ) then
+            if( timer() > kiosk_mouse_timeout ) then
+                kiosk_mouse_timeout = (timer() + 30)
+                setmouse (rnd() * 20), (rnd() * 20), 0
+            end if
         end if
         
         sleep 15, 1
