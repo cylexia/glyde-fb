@@ -20,7 +20,6 @@ stop
     f.writeAs "choose" atX 10 atY 40 value " Choose" style "testbutton" onClickGoto :CHOOSE
     f.writeAs "ask" atX 10 atY 70 value " Ask" style "testbutton" onClickGoto :ASK
     f.writeAs "stop_timers" atX 10 atY 120 value " Stop All Timers" style "testbutton" onClickGoto :STOP_ALL
-    f.writeAs "stop_timers" atX 10 atY 150 value " Soft keyboard" style "testbutton" onClickGoto :SOFT_KB
     f.writeAs "exit" atX 365 atY 5 value "X" onClickGoto :EXIT style "closebutton"
     
     f.onKeyPressed "$escape" goto :ESC
