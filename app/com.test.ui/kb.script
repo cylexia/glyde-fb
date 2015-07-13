@@ -11,7 +11,8 @@
 
 :SHOW_KEYBOARD
     f.defineStyle "kbValue" textColour "#000" lineColour "#444" fillColour "#ccc"
-    f.defineStyle "kbKey" textColour "#008" lineColour "#44a" fillColour "#ccf" width 35 height 35 align "centre"
+    f.defineStyle "kbKey" textColour "#008" lineColour "#44a" fillColour "#ccf" height 35 align "centre"
+    f.defineStyle "kbStdKey" style "kbKey" width 35
     
     # centre it using setOffsetX_Y (add getOffsetX, getOffsetY?)
     KB_LINES = setPart "4" to "1234567890"
@@ -31,7 +32,7 @@
         :KB_SHOW:COLS
             KB_K = cropRightOffOf KB_ROW at 1
             KB_ROW = cropLeftOffOf KB_ROW at 1
-            f.writeAs KB_K style "kbKey" atX KB_X atY KB_Y value KB_K onClickGoto :KB:KEY
+            f.writeAs KB_K style "kbStdKey" atX KB_X atY KB_Y value KB_K onClickGoto :KB:KEY
             f.onKeyPressed KB_K goto :KB:KEY useId KB_K
             KB_X = increase KB_X by 40
             KB_COL = increase KB_COL by 1
@@ -40,10 +41,13 @@
         KB_ROWI = decrease KB_ROWI by 1
         KB_Y = increase KB_Y by 40
     (KB_ROWI) goto :KB_SHOW:ROWS
+    f.writeAs " " style "kbKey" atX 85 atY KB_Y width 155 value " " onClickGoto :KB:KEY
+    f.writeAs "bs" atX 5 width 75 atY KB_Y value "del"  textColour "#008" lineColour "#444" fillColour "#ccc" height 35 align "centre" onClickGoto :KB:BS
+    f.writeAs "0" atX 245 atY KB_Y width 75 value "Cancel" textColour "#800" lineColour "#a44" fillColour "#fcc" height 35 align "centre" onClickGoto :KB:KEY
+    f.writeAs "1" atX 325 atY KB_Y width 75 value "OK" textColour "#080" lineColour "#4a4" fillColour "#cfc" height 35 align "centre" onClickGoto :KB:KEY
     stop
     
 :KB:KEY
-echo "key"
     KB_K = f.getLastActionId
     KB_VALUE = join KB_VALUE & KB_K
     f.writeAs "value" style "kbValue" value KB_VALUE atX 5 atY 5 width 300 height 30
