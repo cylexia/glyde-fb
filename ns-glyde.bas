@@ -331,6 +331,13 @@ namespace Glyde
                 return -254     ' exit intepreter loop
                 
             case else:
+                if( mid( cs, (len( cs ) - 1) ) = "as" ) then
+                    cs = mid( cs, 1, (len( cs ) - 2) )
+                    if( Dict.containsKey( Glyde._styles, cs ) ) then
+                        Dict.set( w, "style", cs )
+                        return Glyde._writeAs( vv, @w )
+                    end if
+                end if
                 return 0        ' ours (ui.*) but not recognised
         end select
         return 1                ' we handled it
