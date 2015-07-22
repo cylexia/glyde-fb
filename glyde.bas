@@ -6,6 +6,7 @@
 #define __GLYDE__
 #include "ns-imagemap.bas"
 #include "ns-glyde.bas"
+#include "ns-glyde-gfx.bas"
 
 VecText.init()
 Glue.init()
@@ -45,8 +46,8 @@ if( len( appdef ) = 0 ) then
 end if
 
 ' Get the script file, exit if empty
-dim as string scriptfile = Dict.valueOf( appdef, "script" )
-if( len( scriptfile ) = 0 ) then
+dim as string scriptfiles = Dict.valueOf( appdef, "script" )
+if( len( scriptfiles ) = 0 ) then
     Utils.echoError( ("[Glyde] Invalid application manifest: " & appfile) )
     end
 end if
@@ -73,11 +74,21 @@ end if
 
 ' Load the scriptfile, exit if unable to read
 dim as integer ern = 0
-dim as string script = Utils.readFile( scriptfile, ern )
-if( ern <> 0 ) then
-    Utils.echoError( ("[Glyde] Unable to read '" & scriptfile & "'") )
-    end
-end if
+dim as string script = "", scriptfile
+scriptfiles &= !"\n"
+dim as integer s = 1, e = instr( scriptfiles, !"\n" )
+while( e > 0 )
+    scriptfile = mid( scriptfiles, s, (e - s) )
+    s = (e + 1)
+    e = instr( s, scriptfiles, !"\n" )
+    
+    ern = 0
+    script &= (Utils.readFile( scriptfile, ern ) & !"\n")
+    if( ern <> 0 ) then
+        Utils.echoError( ("[Glyde] Unable to read '" & scriptfile & "'") )
+        end
+    end if
+wend
 
 ' Load the script into Glue
 Glue.load( script, vars )
