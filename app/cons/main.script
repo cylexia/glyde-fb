@@ -1,0 +1,108 @@
+# test script
+
+# the size given is ultimately ignored...
+f.setViewWidth 80 height 24 backgroundColour 15
+
+# this is probably useless too
+f.setTitle "Test"
+
+f.loadResource "cons/buttons.map" as "btn"
+f.defineStyle "button" align "centre" textcolour "0"
+
+f.drawAs "img" style "button" id "btn.red" atX 1 y 2 value "Red " onClickGoto :EXIT
+f.drawAs "img" style "button" id "btn.green" atX 21 y 2 value "Green " onClickGoto :EXIT
+f.drawAs "img" style "button" id "btn.blue" atX 41 y 2 value "Blue " onClickGoto :EXIT
+f.drawAs "img" style "button" id "btn.none" atX 61 y 2 value "Empty " onClickGoto :EXIT
+f.drawAs "img" style "button" id "btn.yellow" atX 1 y 12 value "Yellow " onClickGoto :EXIT
+f.drawAs "img" style "button" id "btn.magenta" atX 21 y 12 value "Magenta " onClickGoto :EXIT
+stop
+
+:EXIT
+	f.exit
+	stop
+
+
+# Lightswitch (c)2015 by Chris Dickens
+#
+# Initialisation
+#
+# Requires:
+#	init.script (before)
+#
+
+:UI:HOME
+    f.setTitle "Main"
+    f.stopTimer
+    f.clear
+    
+    f.drawAs "b00" style "greenbtn" atX 25 atY 25 value "Menu" onClickGoto :UI:MENU
+    f.drawAs "b10" style "greybtn" atX 275 atY 25 value "Front" onClickGoto :NOTHING
+    f.drawAs "b20" style "greybtn" atX 525 atY 25 value "PC" onClickGoto :NOTHING
+    
+    f.drawAs "b01" style "greybtn" atX 25 atY 275 value "Bed" onClickGoto :NOTHING
+    f.drawAs "b11" style "emptybtn" atX 275 atY 275 onClickGoto :NOTHING
+    f.drawAs "b21" style "emptybtn" atX 525 atY 275 onClickGoto :NOTHING
+    
+    f.onKeyPressed "$morse_key" goto :MORSE_MAIN
+    stop
+
+:UI:MENU
+    f.setTitle "Menu"
+    f.stopTimer
+    f.startTimerWithInterval 30 onTickGoto :UI:HOME
+    f.clear
+    f.drawAs "b00" style "bluebtn" atX 25 atY 25 value "All Off" onClickGoto :UI:HOME
+    f.drawAs "b10" style "bluebtn" atX 275 atY 25 value "Front + PC" onClickGoto :NOTHING
+    f.drawAs "b20" style "emptybtn" atX 525 atY 25 value "" onClickGoto :NOTHING
+    
+    f.drawAs "b01" style "emptybtn" atX 25 atY 275 value "" onClickGoto :NOTHING
+    f.drawAs "b11" style "emptybtn" atX 275 atY 275 value "" onClickGoto :NOTHING
+    f.drawAs "b21" style "greenbtn" atX 525 atY 275 value "System" onClickGoto :UI:SYSTEM
+
+    f.onKeyPressed "$morse_key" goto :MORSE
+    stop
+
+:UI:SYSTEM
+    f.setTitle "System Menu"
+    f.stopTimer
+    f.clear
+    
+    f.drawAs "b00" style "emptybtn" atX 25 atY 25 value "" onClickGoto :NOTHING
+    f.drawAs "b10" style "emptybtn" atX 275 atY 25 value "" onClickGoto :NOTHING
+    f.drawAs "b20" style "emptybtn" atX 525 atY 25 value "" onClickGoto :NOTHING
+    
+    f.drawAs "b01" style "emptybtn" atX 25 atY 275 value "" onClickGoto :NOTHING
+    f.drawAs "b11" style "emptybtn" atX 275 atY 275 value "" onClickGoto :NOTHING
+    f.drawAs "b21" style "redbtn" atX 525 atY 275 value "Exit" onClickGoto :EXIT
+    stop
+
+:MORSE_MAIN
+    echo "k"
+    stop
+
+:MORSE
+    f.stopTimer
+    f.startTimerWithInterval 30 onTickGoto :UI:HOME
+    goto :MORSE_MAIN
+
+:UI:TEST
+    f.setTitle "Main"
+    f.clear
+    f.drawAs "main" style "greybtn" atX 225 atY 50 value "Main" onClickGoto :UI:HOME
+    f.drawAs "" style "emptybtn" atX 475 atY 50 onClickGoto :NOTHING
+    f.drawAs "" style "emptybtn" atX 725 atY 50 onClickGoto :NOTHING
+    
+    f.drawAs "" style "emptybtn" atX 225 atY 300 onClickGoto :NOTHING
+    f.drawAs "" style "emptybtn" atX 475 atY 300 onClickGoto :NOTHING
+    f.drawAs "exit" style "redbtn" atX 725 atY 300 value "Exit" onClickGoto :EXIT
+    stop
+
+:NOTHING
+    goto :UI:HOME
+    stop
+    
+:EXIT
+    f.exit
+    
+    
+    

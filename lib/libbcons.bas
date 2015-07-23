@@ -7,6 +7,9 @@
 ' Provides a backbuffer for the console
 '
 
+' Displays information about the drawing process
+'#define SHOW_BUFFER_STATS
+
 namespace ConsoleBuffer
     declare function init( useansi as integer = 0 ) as integer
     declare sub wipe( bg as integer = 0 )
@@ -119,7 +122,7 @@ namespace ConsoleBuffer
         dim as string row, cmap
         dim as integer iw, ih, x, y, v
         dim as integer ff = freefile()
-        if( open( "img.txt", for input, as ff ) = 0 ) then
+        if( open( file, for input, as ff ) = 0 ) then
             line input #ff, row
             iw = val( mid( row, 1, 3 ) )
             ih = val( mid( row, 3, 3 ) )

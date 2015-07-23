@@ -13,18 +13,23 @@ namespace Glyde
             D_WINDOW_FLAGS     = "window.flags",  _
             D_LAST_HIT_BUTTON     = "lasthitbutton",  _
             D_CLOSE_HANDLER       = "handler.close",  _
-            D_SHOW_HITZONES       = "hitzones.show"
+            D_SHOW_HITZONES       = "hitzones.show",  _
+            D_HILITE_COLOUR       = "colour.hilite",  _
+            D_CONSOLE_USE_ANSI    = "tty.ansi"
             
     declare function init() as integer
     declare function readConfigFile( src as string ) as DICTSTRING
     declare function hittest( x as integer, y as integer ) as DICTSTRING ptr        ' POINTER!
     declare function keytest( keycode as string ) as DICTSTRING
     declare sub setData( key as string, value as string )
-    declare function getData( key as string ) as string
+    declare function getData( key as string, def as string = "" ) as string
     declare sub hilightNext()
     declare function getHilightedAction() as string
     declare function morseKeyPressed() as string
     declare sub repaint()
+    declare function checkTimer() as integer
+    declare function getTimerLabel() as string
+    declare function loadSettings() as integer
     declare function glueCommand( byref w as string, byref vars as string ) as integer
     declare function _setViewSpecs( specs as DICTSTRING ptr ) as integer
     declare function _loadResource( src as string, w as DICTSTRING ptr ) as integer
@@ -37,9 +42,10 @@ namespace Glyde
     declare function _createEntityAs( id as string, d as DICTSTRING ptr ) as integer
     declare sub _drawBorder( x as integer, y as integer, w as integer, h as integer, border as string )
     declare sub _repaint()
-    declare sub _shadeView()
     declare sub _hilight( no_repaint as integer = 0 )
     declare sub _clear()
+    declare sub _clearView()
+    declare sub _shadeView()
     'declare function _drawResourceImage( id as string, byref d as DICTSTRING ) as integer
     declare function _addButton( id as string, d as DICTSTRING ptr ) as integer
     declare sub _drawText( text as string, d as DICTSTRING ptr )
@@ -51,8 +57,6 @@ namespace Glyde
     declare sub _defineStyle( id as string, d as DICTSTRING )
     declare sub _startTimer( interval as integer, label as string )
     declare sub _stopTimer()
-    declare function checkTimer() as integer
-    declare function getTimerLabel() as string
     
     dim as DICTSTRING _buttons(255)
     dim as DICTSTRING _keymap
@@ -113,8 +117,8 @@ namespace Glyde
         return map
     end function
 
-    function getData( key as string ) as string
-        return Dict.valueOf( Glyde._data, key )
+    function getData( key as string, def as string = "" ) as string
+        return Dict.valueOf( Glyde._data, key, def )
     end function
     
     sub setData( key as string, value as string )
@@ -178,6 +182,20 @@ namespace Glyde
         return Utils.EMPTY_STRING
     end function
 
+    function checkTimer() as integer
+        if( Glyde._timer_next > -1 ) then
+            if( timer() >= Glyde._timer_next ) then
+                Glyde._timer_next = (timer() + (Glyde._timer_interval / 10))
+                return TRUE
+            end if
+        end if
+        return FALSE
+    end function
+    
+    function getTimerLabel() as string
+        return Glyde._timer_label
+    end function
+    
     function glueCommand( byref w as string, byref vars as string ) as integer
         dim c as string = Dict.valueOf( w, "_" ), cs as string
         dim ts as string, tn as single, ti as integer
@@ -406,28 +424,21 @@ namespace Glyde
         return 0
     end function
 
+    sub _clear()
+        Glyde._buttons_last = -1
+        Glyde._keymap = Dict.create()
+        Glyde._ids = Dict.create()
+        Glyde._selected = -1        
+        Glyde._clearView()
+    end sub
+
     sub _startTimer( interval as integer, label as string )
         Glyde._timer_interval = interval
         Glyde._timer_label = label
         Glyde._timer_next = (timer() + (interval / 10))
     end sub
-    
+
     sub _stopTimer()
         Glyde._timer_next = -1
     end sub
-
-    function checkTimer() as integer
-        if( Glyde._timer_next > -1 ) then
-            if( timer() >= Glyde._timer_next ) then
-                Glyde._timer_next = (timer() + (Glyde._timer_interval / 10))
-                return TRUE
-            end if
-        end if
-        return FALSE
-    end function
-    
-    function getTimerLabel() as string
-        return Glyde._timer_label
-    end function
-    
 end namespace

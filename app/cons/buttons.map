@@ -1,0 +1,9 @@
+# colour names are wrong;
+.img=cons/btns.txt;
+red=2:18091709;
+green=2:18001709;
+blue=2:00091709;
+dblue=2:00001709;
+magenta=2:00181709;
+yellow=2:18181709;
+none=2:18271709;

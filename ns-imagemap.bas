@@ -35,6 +35,7 @@ namespace ImageMap
     function loadImageMap( id as string, src as string ) as integer
         dim as string d = Utils.readFile( src )
         if( len( d ) = 0 ) then
+            Utils.echoError( "[ImageMap] Unable to load from " & src )
             return 0        ' unable to load or invalid map
         end if
         
@@ -111,7 +112,11 @@ namespace ImageMap
                         dx1, dy1, dx2, dy2  _
                     )
                 return TRUE
+            else
+                Utils.echoError( ("[ImageMap] No segment " & segment & " in map " & map) )
             end if
+        else
+            Utils.echoError( ("[ImageMap] No map " & map) )
         end if
         return FALSE
     end function
@@ -165,7 +170,8 @@ namespace ImageMap
             end if
             return str( img )
         #else
-            return ConsoleBuffer.loadImage( image_src )
+            dim as string img = ConsoleBuffer.loadImage( image_src )
+            return img
         #endif
     end function
     
@@ -187,7 +193,7 @@ namespace ImageMap
             end if
         #else
             ' context has no relevence in console mode
-            ConsoleBuffer.drawImage( x, y, res, dx1, dy1, (dx2 - dx1), (dy2 - dy1) )
+            ConsoleBuffer.drawImage( x, y, res, dx1, dy1, (dx2 - dx1 + 1), (dy2 - dy1 + 1) )
         #endif
     end sub
 

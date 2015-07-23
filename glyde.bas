@@ -1,5 +1,7 @@
 #define CONSOLE_MODE
 
+#define SHOW_BUFFER_STATS
+
 #include "lib/libmain.bas"
 #include "lib/libglue.bas"
 #ifdef CONSOLE_MODE
@@ -18,15 +20,16 @@
     #include "ns-glyde-gfx.bas"
 #endif
 
-#ifdef CONSOLE_MODE
-    ConsoleBuffer.init()
-#else
-    VecText.init()
-#endif
+'dim as integer cols = 80, rows = 25, fh = 16
+'screenres (cols * 8), (rows * fh), , 16
+'width cols, rows
+
+' Initialise components
 Glue.init()
 ExtPlatform.init()
 ImageMap.init()
 Glyde.init()
+' VecText or ConsoleBuffer init() is called in Glyde._loadSettings()
 
 dim as DICTSTRING vars = Utils.parseCommandLine( Dict.create(), Utils.PCL_UCASE )
 
@@ -34,6 +37,10 @@ dim as string appfile = Dict.valueOf( vars, "_" )
 dim as string morse_key = Dict.valueOf( vars, "MORSEKEY", " " )
 dim as integer morse_mouse_key = -1
 Glyde.setData( Glyde.D_WINDOW_FLAGS, Dict.valueOf( vars, "WINDOW_FLAGS" ) )
+if( Dict.containsKey( vars, "HIGHLIGHT" ) ) then
+    Glyde.setData( Glyde.D_HILITE_COLOUR, Dict.valueOf( vars, "HIGHLIGHT" ) )
+end if
+Glyde.setData( Glyde.D_CONSOLE_USE_ANSI, Dict.valueOf( vars, "TTYANSI", "0" ) )
 
 if( morse_key = "kiosk" ) then
     morse_mouse_key = -2
@@ -41,6 +48,12 @@ elseif( len( morse_key ) = 4 ) then
     ' use "mb:(a-z)" to define the mouse button mapping
     morse_mouse_key = (asc( morse_key, 4 ) - 96)
     ' since morse_key will be "mb:X" the standard keyboard method is disabled
+end if
+
+' load settings applied above
+if( Glyde.loadSettings() = FALSE ) then
+    Utils.echoError( "[Glyde] Invalid arguments" )
+    end
 end if
 
 if( len( appfile ) = 0 ) then
@@ -119,7 +132,6 @@ dim as integer ox = -1, oy = -1
 dim as double timeout = -1
 while( running )
     res = Glue.run( label )
-    Glyde.repaint()
     select case res
         case 0:
             Utils.echoError( "[Glyde] Glue Error" )
@@ -128,6 +140,8 @@ while( running )
             running = FALSE
             exit while
     end select
+    
+    Glyde.repaint()
     
     while( TRUE )
         getmouse( mx, my, , mb )
@@ -253,5 +267,12 @@ while( running )
         sleep 15, 1
     wend
 wend
+
+#ifdef CONSOLE_MODE
+if( running = FALSE ) then
+    cls
+    locate 1, 1, 1
+end if
+#endif
 
 end

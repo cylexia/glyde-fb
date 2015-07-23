@@ -1,5 +1,5 @@
 namespace Glyde
-    dim as string _res_images(5)
+    dim as integer _hilight_clr
     
     ' this returns a pointer to save allocating memory
     function hittest( x as integer, y as integer ) as DICTSTRING ptr
@@ -36,6 +36,12 @@ namespace Glyde
         return ""
     end function
     
+    function loadSettings() as integer
+        Glyde._hilight_clr = Glyde._decodeColour( Glyde.getData( Glyde.D_HILITE_COLOUR, "#f00" ) )
+        dim as integer ansi = Dict.boolValueOf( Glyde._data, Glyde.D_CONSOLE_USE_ANSI, FALSE )
+        return ConsoleBuffer.init( ansi )
+    end function
+    
     function _setViewSpecs( specs as DICTSTRING ptr ) as integer
         dim as integer w = width()
         Glyde._width = LOWORD( w )
@@ -55,7 +61,7 @@ namespace Glyde
 '            Utils.echoError( ("[Glyde] Invalid View: w=" & Glyde._width & "; h=" & Glyde._height & "; f=" & vf) )
 '            return FALSE
 '        end if
-'        Glyde._bgcolour = Glyde._decodeColour( Dict.valueOf( *specs, "background", "#fff" ) )
+        Glyde._bgcolour = Glyde._decodeColour( Dict.valueOf( *specs, "backgroundcolour", "#fff" ) )
 '        Glyde._clr_1 = Glyde._decodeColour( Dict.valueOf( *specs, "hilight", "#f00" ) )
 '        Glyde._clr_0 = Glyde._decodeColour( Dict.valueOf( *specs, "border", "#000" ) )
         Glyde._clear()
@@ -75,8 +81,8 @@ namespace Glyde
                         y2 = Dict.intValueOf( *dp, "y2" )
                 if( i = Glyde._selected ) then
                     restr = ConsoleBuffer.saveBuffers()
-                    clr = Glyde._clr_1
-                    ConsoleBuffer.drawBox( x1, y1, (x2 - x1), (y2 - y1), clr, FALSE )
+                    clr = Glyde._decodeColour( Glyde.getData( Glyde.D_HILITE_COLOUR, "12" ) )
+                    ConsoleBuffer.drawBox( x1, y1, (x2 - x1 + 1), (y2 - y1 + 1), clr, FALSE )
                 end if
             next
         end if
@@ -115,21 +121,19 @@ namespace Glyde
     end function
     
     function _loadResource( src as string, w as DICTSTRING ptr ) as integer
-        ' TODO: need to provide custom imagemap support
-        'dim as string id = Dict.valueOf( *w, "as" )
-        'if( ImageMap.loadImageMap( id, src ) = 0 ) then
-        '    return 0        ' error
-        'end if
+        dim as string id = Dict.valueOf( *w, "as" )
+        if( ImageMap.loadImageMap( id, src ) = 0 ) then
+            return 0        ' error
+        end if
         return 1
     end function
 
     function _removeResource( id as string ) as integer
-        ' TODO: provide imagemap support
-        'ImageMap.deleteImageMap( id )
+        ImageMap.deleteImageMap( id )
         return 1
     end function
 
-    sub _clear()
+    sub _clearView()
         ConsoleBuffer.wipe( Glyde._bgcolour )
     end sub
     
@@ -191,11 +195,14 @@ namespace Glyde
             if( i > 0 ) then
                 dim as string map = mid( entity, 1, (i - 1) )
                 dim as string seg = mid( entity, (i + 1) )
-                ' TODO: custom imagemap implementation
-'                if( ImageMap.drawSegmentTo( Glyde._draw_context, map, seg, x, y, 0 ) ) then      ' align is disabled
-'                    Dict.set( *d, "width", ImageMap.getSegmentValue( map, seg, ImageMap.S_WIDTH ) )
-'                    Dict.set( *d, "height", ImageMap.getSegmentValue( map, seg, ImageMap.S_HEIGHT ) )
-'                end if
+                if( ImageMap.drawSegmentTo( Glyde._draw_context, map, seg, x, y, 0 ) ) then      ' align is disabled
+                    w = ImageMap.getSegmentValue( map, seg, ImageMap.S_WIDTH )
+                    h = ImageMap.getSegmentValue( map, seg, ImageMap.S_HEIGHT )
+                    Dict.set( *d, "width", w )
+                    Dict.set( *d, "height", h )
+                else
+                    return 0
+                end if
             else
                 Utils.echoError( ("[Glyde] Invalid entity id: " & entity) )            
                 return 0
@@ -203,10 +210,7 @@ namespace Glyde
         end if
         
         if( Dict.containsKey( *d, "value" ) ) then
-            clr = Glyde._decodeColour( Dict.valueOf( *d, "textcolour", "0" ) )
-            dim as integer  _
-                size = Dict.intValueOf( *d, "size", 2 ),  _
-                thickness = Dict.intValueOf( *d, "thickness", 2 )
+            clr = Glyde._decodeColour( Dict.valueOf( *d, "textcolour", "15" ) )
             dim as string text = Dict.valueOf( *d, "value", Dict.valueOf( *d, "text" ) )
             dim as string align = Dict.valueOf( *d, "align", "2" )
             if( (align = "2") or (align = "centre") ) then

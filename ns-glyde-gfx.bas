@@ -1,5 +1,6 @@
 namespace Glyde
-
+    dim as integer _hilight_clr
+    
     ' this returns a pointer to save allocating memory
     function hittest( x as integer, y as integer ) as DICTSTRING ptr
         dim as DICTSTRING ptr result = 0
@@ -43,6 +44,11 @@ namespace Glyde
         return ""
     end function
     
+    function loadSettings() as integer
+        Glyde._hilight_clr = Glyde._decodeColour( Glyde.getData( Glyde.D_HILITE_COLOUR, "#f00" ) )
+        return VecText.init()
+    end function
+    
     function _setViewSpecs( specs as DICTSTRING ptr ) as integer
         Glyde._width = Dict.intValueOf( *specs, "width" )
         Glyde._height = Dict.intValueOf( *specs, "height" )
@@ -56,7 +62,7 @@ namespace Glyde
             Utils.echoError( ("[Glyde] Invalid View: w=" & Glyde._width & "; h=" & Glyde._height & "; f=" & vf) )
             return FALSE
         end if
-        Glyde._bgcolour = Glyde._decodeColour( Dict.valueOf( *specs, "background", "#fff" ) )
+        Glyde._bgcolour = Glyde._decodeColour( Dict.valueOf( *specs, "backgroundcolour", "#fff" ) )
         Glyde._clr_1 = Glyde._decodeColour( Dict.valueOf( *specs, "hilight", "#f00" ) )
         Glyde._clr_0 = Glyde._decodeColour( Dict.valueOf( *specs, "border", "#000" ) )
         Glyde._clear()
@@ -67,7 +73,7 @@ namespace Glyde
         if( Glyde._draw_context <> 0 ) then
             put (0, 0), Glyde._draw_context, PSet
             if( Glyde._buttons_last > -1 ) then        
-                dim as integer i, clr
+                dim as integer i
                 for i = 0 to Glyde._buttons_last
                     dim as DICTSTRING ptr dp = @Glyde._buttons(i)
                     dim as integer   _
@@ -76,9 +82,8 @@ namespace Glyde
                             x2 = Dict.intValueOf( *dp, "x2" ),  _
                             y2 = Dict.intValueOf( *dp, "y2" )
                     if( i = Glyde._selected ) then
-                        clr = Glyde._clr_1
-                        line (x1,y1)-(x2,y2), clr, B
-                        line ((x1+1),(y1+1))-((x2-1),(y2-1)), clr, B
+                        line (x1,y1)-(x2,y2), Glyde._hilight_clr, B
+                        line ((x1+1),(y1+1))-((x2-1),(y2-1)), Glyde._hilight_clr, B
                     'else
                     '    clr = Glyde._clr_0
                     end if
@@ -129,13 +134,7 @@ namespace Glyde
         return 1
     end function
 
-    sub _clear()
-        'color 0, RGB( 255, 255, 255 )
-        'cls
-        Glyde._buttons_last = -1
-        Glyde._keymap = Dict.create()
-        Glyde._ids = Dict.create()
-        Glyde._selected = -1
+    sub _clearView()
         if( Glyde._draw_context <> 0 ) then
             imagedestroy( Glyde._draw_context )
             Glyde._draw_context = 0
@@ -202,8 +201,10 @@ namespace Glyde
                 dim as string map = mid( entity, 1, (i - 1) )
                 dim as string seg = mid( entity, (i + 1) )
                 if( ImageMap.drawSegmentTo( Glyde._draw_context, map, seg, x, y, 0 ) ) then      ' align is disabled
-                    Dict.set( *d, "width", ImageMap.getSegmentValue( map, seg, ImageMap.S_WIDTH ) )
-                    Dict.set( *d, "height", ImageMap.getSegmentValue( map, seg, ImageMap.S_HEIGHT ) )
+                    w = ImageMap.getSegmentValue( map, seg, ImageMap.S_WIDTH )
+                    h = ImageMap.getSegmentValue( map, seg, ImageMap.S_HEIGHT )
+                    Dict.set( *d, "width", w )
+                    Dict.set( *d, "height", h )
                 end if
             else
                 Utils.echoError( ("[Glyde] Invalid entity id: " & entity) )            
