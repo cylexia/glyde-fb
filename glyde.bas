@@ -1,14 +1,28 @@
+#define CONSOLE_MODE
+
 #include "lib/libmain.bas"
-#include "lib/libvecfont.bas"
 #include "lib/libglue.bas"
+#ifdef CONSOLE_MODE
+    #include "lib/libbcons.bas"
+#else
+    #include "lib/libvecfont.bas"
+#endif
 #include "mod/platform.bas"
 
 #define __GLYDE__
 #include "ns-imagemap.bas"
 #include "ns-glyde.bas"
-#include "ns-glyde-gfx.bas"
+#ifdef CONSOLE_MODE
+    #include "ns-glyde-cons.bas"
+#else
+    #include "ns-glyde-gfx.bas"
+#endif
 
-VecText.init()
+#ifdef CONSOLE_MODE
+    ConsoleBuffer.init()
+#else
+    VecText.init()
+#endif
 Glue.init()
 ExtPlatform.init()
 ImageMap.init()
@@ -72,7 +86,7 @@ if( len( vardefs ) > 0 ) then
     wend
 end if
 
-' Load the scriptfile, exit if unable to read
+' Load the scriptfiles, exit if unable to read
 dim as integer ern = 0
 dim as string script = "", scriptfile
 scriptfiles &= !"\n"

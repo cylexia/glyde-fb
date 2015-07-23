@@ -23,6 +23,10 @@ namespace ImageMap
     declare function getSegmentValue( map as string, segment as string, value as string ) as integer
     declare function _decodeRect( rect as string ) as DICTSTRING
 
+    declare function _loadImageResource( image_src as string ) as string
+    declare sub _deleteImageResource( res as string )
+    declare sub _drawSegment( context as any ptr, res as string, x as integer, y as integer, dx1 as integer, dy1 as integer, dx2 as integer, dy2 as integer )
+
     function init() as integer
         ImageMap._maps = Dict.create()
         return TRUE
@@ -58,33 +62,20 @@ namespace ImageMap
             e = instr( s, d, ";" )
         wend
         
-        dim as integer bmpwidth, bmpheight
-        dim as integer ff = freefile()
-        if( open( image_src for binary access read as #ff ) <> 0 ) then
+        dim as string res = ImageMap._loadImageResource( image_src )
+        if( len( res ) = 0 ) then
             return FALSE
         end if
-        
-        ' retrieve BMP dimensions
-        get #ff, 19, bmpwidth
-        get #ff, 23, bmpheight
-
-        close #ff        
-        
-        dim as any ptr img = imagecreate( bmpwidth, bmpheight )
-        
-        if( bload( image_src, img ) <> 0 ) then
-            imagedestroy( img )
-            return FALSE
-        end if
-
-        Dict.set( map, "_ptr", cint( img ) )
+        Dict.set( map, "_ptr", res )
        
         Dict.set( ImageMap._maps, id, map )
         return TRUE
     end function
-    
+
     function deleteImageMap( id as string ) as integer
         if( Dict.containsKey( ImageMap._maps, id ) ) then
+            dim as DICTSTRING map = Dict.valueOf( ImageMap._maps, id )
+            ImageMap._deleteImageResource( Dict.valueOf( map, "_ptr" ) )
             Dict.remove( ImageMap._maps, id )
             return TRUE
         end if
@@ -101,7 +92,6 @@ namespace ImageMap
             dim as DICTSTRING mapd = Dict.valueOf( ImageMap._maps, map )
             if( Dict.containsKey( mapd, segment ) ) then
                 dim as DICTSTRING box = Dict.valueOf( mapd, segment )
-                dim as any ptr ip = cptr( any ptr, Dict.intValueOf( mapd, "_ptr" ) )
                 dim as integer dx1 = Dict.intValueOf( box, "x" )
                 dim as integer w = Dict.intValueOf( box, "w" )
                 select case a
@@ -114,11 +104,12 @@ namespace ImageMap
                         dy1 = Dict.intValueOf( box, "y" ),  _
                         dx2 = (w + dx1 - 1),  _
                         dy2 = (Dict.intValueOf( box, "h" ) + dy1 - 1)
-                if( context <> 0 ) then
-                    put context, (x, y), ip, (dx1, dy1)-(dx2, dy2), PSet
-                else
-                    put (x, y), ip, (dx1, dy1)-(dx2, dy2), PSet
-                end if
+                ImageMap._drawSegment(   _
+                        context,   _
+                        Dict.valueOf( mapd, "_ptr" ),  _
+                        x, y,  _
+                        dx1, dy1, dx2, dy2  _
+                    )
                 return TRUE
             end if
         end if
@@ -151,4 +142,53 @@ namespace ImageMap
         Dict.set( seg, "h", val( mid( rect, i, sl ) ) )
         return seg
     end function
+    
+    function _loadImageResource( image_src as string ) as string
+        #ifndef CONSOLE_MODE
+            dim as integer bmpwidth, bmpheight
+            dim as integer ff = freefile()
+            if( open( image_src for binary access read as #ff ) <> 0 ) then
+                return Utils.EMPTY_STRING
+            end if
+            
+            ' retrieve BMP dimensions
+            get #ff, 19, bmpwidth
+            get #ff, 23, bmpheight
+    
+            close #ff        
+            
+            dim as any ptr img = imagecreate( bmpwidth, bmpheight )
+            
+            if( bload( image_src, img ) <> 0 ) then
+                imagedestroy( img )
+                return Utils.EMPTY_STRING
+            end if
+            return str( img )
+        #else
+            return ConsoleBuffer.loadImage( image_src )
+        #endif
+    end function
+    
+    sub _deleteImageResource( res as string )
+        #ifndef CONSOLE_MODE
+            dim as any ptr img_ptr = cptr( any ptr, cint( res ) )
+            imagedestroy( img_ptr )
+        #endif
+        ' there is nothing to do for console images
+    end sub
+
+    sub _drawSegment( context as any ptr, res as string, x as integer, y as integer, dx1 as integer, dy1 as integer, dx2 as integer, dy2 as integer )
+        #ifndef CONSOLE_MODE
+            dim as any ptr ip = cptr( any ptr, cint( res ) )
+            if( context <> 0 ) then
+                put context, (x, y), ip, (dx1, dy1)-(dx2, dy2), PSet
+            else
+                put (x, y), ip, (dx1, dy1)-(dx2, dy2), PSet
+            end if
+        #else
+            ' context has no relevence in console mode
+            ConsoleBuffer.drawImage( x, y, res, dx1, dy1, (dx2 - dx1), (dy2 - dy1) )
+        #endif
+    end sub
+
 end namespace

@@ -166,11 +166,11 @@ namespace Glyde
             line Glyde._draw_context, (i, 0)-STEP(-s, s), 0
         next
         ' since this is often used before execution or such we repaint NOW
-        Glyde.repaint()
+        Glyde._repaint()
     end sub        
     
     sub _hilight( no_repaint as integer = 0 )
-        Glyde.repaint()
+        Glyde._repaint()
     end sub
     
     sub _drawBorder( x as integer, y as integer, w as integer, h as integer, border as string )

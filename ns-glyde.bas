@@ -24,6 +24,7 @@ namespace Glyde
     declare sub hilightNext()
     declare function getHilightedAction() as string
     declare function morseKeyPressed() as string
+    declare sub repaint()
     declare function glueCommand( byref w as string, byref vars as string ) as integer
     declare function _setViewSpecs( specs as DICTSTRING ptr ) as integer
     declare function _loadResource( src as string, w as DICTSTRING ptr ) as integer
@@ -120,6 +121,10 @@ namespace Glyde
         Dict.set( Glyde._data, key, value )
     end sub
 
+    sub repaint()
+        Glyde._repaint()
+    end sub
+
     sub hilightNext()
         if( Glyde._buttons_last > -1 ) then
             if( Glyde._selected < Glyde._buttons_last ) then
@@ -172,10 +177,6 @@ namespace Glyde
         end if
         return Utils.EMPTY_STRING
     end function
-
-    sub repaint() 
-        Glyde._repaint()
-    end sub
 
     function glueCommand( byref w as string, byref vars as string ) as integer
         dim c as string = Dict.valueOf( w, "_" ), cs as string
