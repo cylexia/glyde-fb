@@ -218,7 +218,7 @@ namespace Glyde
                 size = Dict.intValueOf( *d, "size", 2 ),  _
                 thickness = Dict.intValueOf( *d, "thickness", 2 )
             dim as string text = Dict.valueOf( *d, "value", Dict.valueOf( *d, "text" ) )
-            dim as string align = Dict.valueOf( *d, "align", "2" )
+            dim as string align = Dict.valueOf( *d, "align", "0" )
             if( (align = "2") or (align = "centre") ) then
                 x += ((w - (VecText.getGlyphWidth( size, thickness ) * len( text ))) / 2)
             elseif( (align = "1") or (align = "right") ) then

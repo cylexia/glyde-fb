@@ -212,13 +212,16 @@ namespace Glyde
         if( Dict.containsKey( *d, "value" ) ) then
             clr = Glyde._decodeColour( Dict.valueOf( *d, "textcolour", "15" ) )
             dim as string text = Dict.valueOf( *d, "value", Dict.valueOf( *d, "text" ) )
-            dim as string align = Dict.valueOf( *d, "align", "2" )
+            dim as string align = Dict.valueOf( *d, "align", "0" )
             if( (align = "2") or (align = "centre") ) then
                 x += ((w - len( text )) / 2)
             elseif( (align = "1") or (align = "right") ) then
                 x += (w - len( text ))
             end if
-            y += ((h - 1) / 2)      ' TODO: do we need the -1?
+            dim as integer yofs = ((h - 1) / 2)      ' TODO: do we need the -1?
+            if( yofs > 0 ) then
+                y += yofs
+            end if
             ConsoleBuffer.writeText( text, x, y, clr, -1 )
             if( Dict.intValueOf( *d, "width" ) = 0 ) then
                 Dict.set( *d, "width", len( text ) )

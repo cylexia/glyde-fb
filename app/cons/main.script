@@ -6,11 +6,13 @@ f.setViewWidth 80 height 24 backgroundColour 15
 # this is probably useless too
 f.setTitle "Test"
 
-#CLR = @ 15
-#:LOOP
-#	f.writeAs CLR value CLR atX 1 y CLR colour CLR
-#	CLR = decrease CLR by 1
-#(CLR) goto :LOOP
+CLR = @ 15
+Y = @ 16
+:LOOP
+	f.writeAs CLR value CLR atX 1 y Y colour CLR
+	CLR = decrease CLR by 1
+	Y = decrease Y by 1
+(Y) goto :LOOP
 
 f.writeAs "exit" value "Exit" atX 40 y 11 colour 0 onClickGoto :EXIT
 
