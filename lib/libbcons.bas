@@ -336,32 +336,35 @@ namespace ConsoleBuffer
 
     ' ANSI mode (x and y are 1 based):
     function _txt_ansi( x as integer, y as integer, txtbuffer() as ubyte, ofs as integer, l as integer, fg as integer, bg as integer, flags as ubyte ) as ubyte
-        if( ConsoleBuffer._useansi ) then
-            dim as string s = ""
-            dim as integer i, c
-            for i = 1 to l
-                c = txtbuffer( (ofs + i - 1) )
-                if( c < 32 ) then
-                    c = 32
-                end if
-                s &= chr( c )
-            next
-            dim as string csi = (chr( 27 ) & "[")
-            print #1, csi;
-            if( bg > 7 ) then
-                print #1, str(40 + (bg - 7)); ";5;";
-            else
-                print #1, str(40 + bg); ";";
+        dim as string s = ""
+        dim as integer i, c
+        for i = 1 to l
+            c = txtbuffer( (ofs + i - 1) )
+            if( c < 32 ) then
+                c = 32
             end if
-            if( fg > 7 ) then
-                print #1, str(30 + (fg - 7)); ";1";
-            else
-                print #1, str(30 + fg);
-            end if
-            print #1, "m";
-            print #1, s;
-            print #1, csi; "0m";
+            s &= chr( c )
+        next
+        ' translate windows terminal colours to ansi
+        dim as string tr = "aecgbfdhimkojnlp"
+        fg = (asc( tr, (fg + 1) ) - 97)
+        bg = (asc( tr, (bg + 1) ) - 97)
+        
+        dim as string csi = (chr( 27 ) & "[")
+        print #1, csi;
+        if( bg > 7 ) then
+            print #1, str(40 + (bg - 7)); ";5;";
+        else
+            print #1, str(40 + bg); ";";
         end if
+        if( fg > 7 ) then
+            print #1, str(30 + (fg - 7)); ";1";
+        else
+            print #1, str(30 + fg);
+        end if
+        print #1, "m";
+        print #1, s;
+        print #1, csi; "0m";
         return flags
     end function
 end namespace
