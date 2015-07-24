@@ -1,0 +1,16 @@
+0	black
+1	dkblue
+2	dkgreen
+3	dkcyan
+4	dkred
+5	dkmagenta
+6	dkyellow
+7	grey
+8	dkgrey
+9	blue
+10	green
+11	cyan
+12	red
+13	magenta
+14	yellow
+15	white

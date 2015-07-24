@@ -152,7 +152,7 @@ namespace ConsoleBuffer
         dim as integer p
         dim as integer col, row = iy
         dim as integer xi, yi
-        dim as integer ofs
+        dim as integer ofs, ofsmax = ubound( ConsoleBuffer.s_txtbuffer )
         dim as ubyte c
         for yi = 0 to (ih - 1)
             p = ((fiw * (yi + iy)) + 3)
@@ -165,6 +165,10 @@ namespace ConsoleBuffer
                     ConsoleBuffer.s_txtbuffer(ofs) = 32
                 end if
                 ofs += 1
+                if( ofs > ofsmax ) then
+                    ' Abort NOW!
+                    return
+                end if
             next
         next
     end sub

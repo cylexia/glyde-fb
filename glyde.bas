@@ -1,6 +1,6 @@
 #define CONSOLE_MODE
 
-#define SHOW_BUFFER_STATS
+'#define SHOW_BUFFER_STATS
 
 #include "lib/libmain.bas"
 #include "lib/libglue.bas"

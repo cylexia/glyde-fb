@@ -6,33 +6,15 @@ f.setViewWidth 80 height 24 backgroundColour 15
 # this is probably useless too
 f.setTitle "Test"
 
-#CLR = @ 15
-#:LOOP
-#	f.writeAs CLR value CLR atX 1 y CLR colour CLR
-#	CLR = decrease CLR by 1
-#(CLR) goto :LOOP
+f.loadResource "cons/buttons.map" as "btn"
+f.defineStyle "button" align "centre" textcolour "0"
 
-f.writeAs "exit" value "Exit" atX 40 y 11 colour 0 onClickGoto :EXIT
-
-stop
-
-f.loadResource "cons/ui.map" as "ui"
-f.defineStyle "btn" align "left" textcolour "8"
-f.defineStyle "btn1" style "btn" atX 2 y 1 width 30 height 3
-f.defineStyle "btn2" style "btn" atX 2 y 5 width 30 height 3
-f.defineStyle "btn3" style "btn" atX 2 y 9 width 30 height 3
-f.defineStyle "btn4" style "btn" atX 2 y 13 width 30 height 3
-f.defineStyle "btn5" style "btn" atX 2 y 17 width 30 height 3
-f.defineStyle "btn6" style "btn" atX 2 y 21 width 30 height 3
-
-f.drawAs "bg" id "ui.back" atX 0 y 0
-f.drawAs "b1" style "btn1" value "  [1] Main" onClickGoto :EXIT
-f.drawAs "b2" style "btn2" value "  [2] " onClickGoto :EXIT
-f.drawAs "b3" style "btn3" value "  [3] " onClickGoto :EXIT
-f.drawAs "b4" style "btn4" value "  [4] " onClickGoto :EXIT
-f.drawAs "b5" style "btn5" value "  [5] " onClickGoto :EXIT
-f.drawAs "b6" style "btn6" value "  [6] " onClickGoto :EXIT
-
+f.drawAs "img" style "button" id "btn.red" atX 1 y 2 value "Red " onClickGoto :EXIT
+f.drawAs "img" style "button" id "btn.green" atX 21 y 2 value "Green " onClickGoto :EXIT
+f.drawAs "img" style "button" id "btn.blue" atX 41 y 2 value "Blue " onClickGoto :EXIT
+f.drawAs "img" style "button" id "btn.none" atX 61 y 2 value "Empty " onClickGoto :EXIT
+f.drawAs "img" style "button" id "btn.yellow" atX 1 y 12 value "Yellow " onClickGoto :EXIT
+f.drawAs "img" style "button" id "btn.magenta" atX 21 y 12 value "Magenta " onClickGoto :EXIT
 stop
 
 :EXIT
