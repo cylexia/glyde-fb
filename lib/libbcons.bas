@@ -345,7 +345,7 @@ namespace ConsoleBuffer
             end if
             s &= chr( c )
         next
-        ' translate windows terminal colours to ansi
+        ' translate windows terminal colours to ansi (doesn't work)
         dim as string tr = "aecgbfdhimkojnlp"
         fg = (asc( tr, (fg + 1) ) - 97)
         bg = (asc( tr, (bg + 1) ) - 97)
